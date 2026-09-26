@@ -1,7 +1,8 @@
 #Requires -Version 5.1
 <#
     CHECK SCRIPTS LAUNCHER — PowerShell Edition
-    Аналог bat-версии: скачивает и запускает 1.ps1 и 2.ps1
+    Скачивает и запускает 1.ps1 и 2.ps1.
+    Работает и как файл, и через `irm URL | iex`.
 #>
 
 # ----------------------------------------------------------------------------
@@ -9,14 +10,30 @@
 # ----------------------------------------------------------------------------
 $URL1 = "https://raw.githubusercontent.com/galarol/checkcheat/main/1.ps1"
 $URL2 = "https://raw.githubusercontent.com/galarol/checkcheat/main/2.ps1"
-$OUT1 = Join-Path $PSScriptRoot "script1.ps1"
-$OUT2 = Join-Path $PSScriptRoot "script2.ps1"
 
 # ----------------------------------------------------------------------------
 # Кодировка консоли
 # ----------------------------------------------------------------------------
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding            = [System.Text.Encoding]::UTF8
+
+# ----------------------------------------------------------------------------
+# Определяем базовую папку для сохранения скачанных скриптов.
+# Если запуск из файла — папка скрипта.
+# Если запуск через `irm | iex` — $PSScriptRoot пустой, берём %TEMP%\checkcheat.
+# ----------------------------------------------------------------------------
+if ([string]::IsNullOrEmpty($PSScriptRoot)) {
+    $baseDir = Join-Path $env:TEMP "checkcheat"
+} else {
+    $baseDir = $PSScriptRoot
+}
+
+if (-not (Test-Path $baseDir)) {
+    New-Item -ItemType Directory -Path $baseDir -Force | Out-Null
+}
+
+$OUT1 = Join-Path $baseDir "script1.ps1"
+$OUT2 = Join-Path $baseDir "script2.ps1"
 
 # ----------------------------------------------------------------------------
 # Проверка прав администратора
@@ -27,11 +44,23 @@ $isAdmin = ([Security.Principal.WindowsPrincipal] `
 
 if (-not $isAdmin) {
     Write-Host "[!] Требуются права администратора. Перезапуск..." -ForegroundColor Red
-    Start-Process powershell -Verb RunAs -ArgumentList @(
-        "-NoProfile",
-        "-ExecutionPolicy", "Bypass",
-        "-File", "`"$PSCommandPath`""
-    )
+
+    if ([string]::IsNullOrEmpty($PSCommandPath)) {
+        # Запуск через `irm | iex` — $PSCommandPath пустой, перезапускаем той же командой
+        $cmd = "iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/galarol/checkcheat/main/checker.ps1'))"
+        Start-Process powershell -Verb RunAs -ArgumentList @(
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-Command", $cmd
+        )
+    } else {
+        # Запуск как файл — перезапускаем файл
+        Start-Process powershell -Verb RunAs -ArgumentList @(
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-File", "`"$PSCommandPath`""
+        )
+    }
     exit
 }
 
@@ -157,7 +186,7 @@ Write-Host ""
 
 $ErrorActionPreference = "Stop"
 try {
-    Invoke-WebRequest -Uri $URL1 -OutFile $OUT1 -UseBasicParsing
+    Invoke-WebRequest -Uri $URL1 -OutFile $OUT1 -UseBasicParsing | Out-Null
     Write-Host "[OK] Скачан: $OUT1" -ForegroundColor Green
 }
 catch {
@@ -166,7 +195,7 @@ catch {
 }
 
 try {
-    Invoke-WebRequest -Uri $URL2 -OutFile $OUT2 -UseBasicParsing
+    Invoke-WebRequest -Uri $URL2 -OutFile $OUT2 -UseBasicParsing | Out-Null
     Write-Host "[OK] Скачан: $OUT2" -ForegroundColor Green
 }
 catch {

